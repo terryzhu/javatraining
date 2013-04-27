@@ -10,21 +10,21 @@
  */ 
 package com.ericsson;
 
-import java.net.Socket;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
  * @author ZJ
  *
  */
-public class CentralServer extends AbstractCentralServer{
+public class CentralServerTest {
 
-	public CentralServer(int port) {
-		super(port);
-	}
-
-	@Override
-	public AbstractSession newSessionInstance(AbstractCentralServer server, Socket session) {
-		return new Session(this, session);
+	@Test
+	public void test() throws InterruptedException {
+		new Thread(new CentralServer(8888)).start();
+		
+		Thread.sleep(500000);
 	}
 
 }

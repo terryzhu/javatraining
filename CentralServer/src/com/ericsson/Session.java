@@ -7,24 +7,42 @@
  * The program(s) may be used and/or copied with the written permission from Ericsson AB 
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
- */ 
+ */
 package com.ericsson;
 
 import java.net.Socket;
+import java.util.Date;
 
 /**
  * @author ZJ
- *
+ * 
  */
-public class CentralServer extends AbstractCentralServer{
+public class Session extends AbstractSession {
 
-	public CentralServer(int port) {
-		super(port);
+	/**
+	 * @param server
+	 * @param socket
+	 */
+	public Session(AbstractCentralServer server, Socket socket) {
+		super(server, socket);
 	}
 
 	@Override
-	public AbstractSession newSessionInstance(AbstractCentralServer server, Socket session) {
-		return new Session(this, session);
+	public void connect() {
+	}
+
+	@Override
+	public void disconnect() {
+
+	}
+
+	@Override
+	public String handleData(String input) {
+		return input + " " + new Date();
+	}
+
+	@Override
+	public void handleException(Exception e) {
 	}
 
 }
