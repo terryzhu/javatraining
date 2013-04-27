@@ -12,12 +12,12 @@ package com.ericsson;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -25,11 +25,11 @@ import java.net.Socket;
  * 
  */
 public abstract class AbstractSession implements Runnable {
-	public static final String EXIT="EXIT";
+	public static final String EXIT = "EXIT";
+	public static final String PROMPT = "> ";
 	Socket socket;
-	ServerSocket server;
 
-	public AbstractSession(AbstractCentralServer server, Socket socket) {
+	public AbstractSession(Socket socket) {
 		super();
 		this.socket = socket;
 	}
@@ -44,43 +44,21 @@ public abstract class AbstractSession implements Runnable {
 			outputStream = socket.getOutputStream();
 			reader = new BufferedReader(new InputStreamReader(inputStream));
 			writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+			writer.write(PROMPT);
+			writer.flush();
 			String input;
-			while(!EXIT.equals((input = reader.readLine()))){
+			while (!EXIT.equals((input = reader.readLine()))) {
 				String ouput = handleData(input);
-				writer.write(ouput+"\r\n");
+				writer.write(ouput + "\r\n" + PROMPT);
 				writer.flush();
 			}
 		} finally {
-			boolean exHappen = false;
-			try {
-				if (inputStream != null) {
-					inputStream.close();
-				}
-			} catch (IOException e) {
-				exHappen = true;
-			}
-			try {
-				if (outputStream != null) {
-					outputStream.close();
-				}
-			} catch (IOException e) {
-				exHappen = true;
-			}
-			try {
-				if (reader != null) {
-					reader.close();
-				}
-			} catch (IOException e) {
-				exHappen = true;
-			}
-			try {
-				if (writer != null) {
-					writer.close();
-				}
-			} catch (IOException e) {
-				exHappen = true;
-			}
-			if (exHappen) {
+			boolean exceptionHappened = false;
+			exceptionHappened = closeIo(inputStream, exceptionHappened);
+			exceptionHappened = closeIo(outputStream, exceptionHappened);
+			exceptionHappened = closeIo(reader, exceptionHappened);
+			exceptionHappened = closeIo(writer, exceptionHappened);
+			if (exceptionHappened) {
 				throw new IOException("IO Exception occurs when handleMessage()");
 			}
 
@@ -88,23 +66,41 @@ public abstract class AbstractSession implements Runnable {
 
 	}
 
-	public abstract void connect();
+	protected void sessionEstablished() {
+		SvrLogger.log("session established");
+	}
 
-	public abstract void disconnect();
+	protected void sessionDestroyed() {
+		SvrLogger.log("session destroyed");
+	}
 
 	public abstract String handleData(String input);
 
-	public abstract void handleException(Exception e);
+	protected void handleSessionException(Exception e) {
+		SvrLogger.log("handle session exception " + e.getMessage());
+		e.printStackTrace(SvrLogger.getPrintStream());
+	}
 
 	@Override
 	public void run() {
 		try {
-			connect();
+			sessionEstablished();
 			handleMessage();
-			disconnect();
+			sessionDestroyed();
 		} catch (IOException e) {
+			handleSessionException(e);
 		}
 
 	}
 
+	private boolean closeIo(Closeable closeable, boolean exceptionHappened) {
+		try {
+			if (closeable != null) {
+				closeable.close();
+			}
+		} catch (IOException e) {
+			exceptionHappened = true;
+		}
+		return exceptionHappened;
+	}
 }

@@ -13,15 +13,13 @@ package com.ericsson;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author eprtuxy
  * 
  */
 public abstract class AbstractCentralServer implements Runnable {
-
+	
 	public AbstractCentralServer(int port) {
 		super();
 		this.port = port;
@@ -30,24 +28,29 @@ public abstract class AbstractCentralServer implements Runnable {
 	protected ServerSocket server;
 	protected int port;
 	protected boolean close = false;
-	protected Set<AbstractSession> sessions = new HashSet<AbstractSession>();
 
 	protected void startServer() throws IOException {
 		server = new ServerSocket(port);
+		SvrLogger.log(server.toString() + " is listening");
 	}
 
 	protected void handleConnections() throws IOException {
 		while (!close) {
 			Socket client = server.accept();
-			AbstractSession session = newSessionInstance(this, client);
+			AbstractSession session = newSessionInstance(client);
 			new Thread(session).start();
 		}
 	}
 
-	public abstract AbstractSession newSessionInstance(AbstractCentralServer server, Socket session);
+	public abstract AbstractSession newSessionInstance(Socket session);
+
+	protected void handleServerException(IOException e) {
+		SvrLogger.log("handleServerException " + e.getMessage());
+		e.printStackTrace(SvrLogger.getPrintStream());
+	}
 
 	protected void release() {
-
+		SvrLogger.log("release the resource");
 	}
 
 	@Override
@@ -57,8 +60,8 @@ public abstract class AbstractCentralServer implements Runnable {
 			handleConnections();
 			release();
 		} catch (IOException e) {
+			handleServerException(e);
 		}
-
 	}
 
 }
