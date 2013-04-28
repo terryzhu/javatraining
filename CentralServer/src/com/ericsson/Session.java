@@ -19,7 +19,6 @@ import java.util.Date;
  */
 public class Session extends AbstractSession {
 	CentralServer server;
-	public static final String UNREG = "the key has not been registered";
 	public static final String INVALID_INPUT = "invalid input";
 
 	/**
@@ -27,12 +26,12 @@ public class Session extends AbstractSession {
 	 * @param socket
 	 */
 	public Session(CentralServer server, Socket socket) {
-		super(socket);
+		super(server, socket);
 		this.server = server;
 	}
 
 	@Override
-	public String handleData(String input) {
+	public String handleInput(String input) {
 		if (!isInputValid(input)) {
 			return INVALID_INPUT;
 		}
@@ -42,7 +41,7 @@ public class Session extends AbstractSession {
 			return doRegister(key);
 		}
 		if (!isKeyRegistered(key)) {
-			return UNREG;
+			return "key [" + key + "] has not been registered";
 		}
 		if (isUnregisterCommand(command)) {
 			return doUnregister(key);

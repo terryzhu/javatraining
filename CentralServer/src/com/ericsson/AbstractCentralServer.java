@@ -13,13 +13,15 @@ package com.ericsson;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author eprtuxy
  * 
  */
 public abstract class AbstractCentralServer implements Runnable {
-	
 	public AbstractCentralServer(int port) {
 		super();
 		this.port = port;
@@ -28,29 +30,69 @@ public abstract class AbstractCentralServer implements Runnable {
 	protected ServerSocket server;
 	protected int port;
 	protected boolean close = false;
+	protected Set<AbstractSession> sessions = Collections.synchronizedSet(new HashSet<AbstractSession>());
+
+	public Set<AbstractSession> getSessions() {
+		return sessions;
+	}
 
 	protected void startServer() throws IOException {
+		// java contains tcp self-connection
 		server = new ServerSocket(port);
 		SvrLogger.log(server.toString() + " is listening");
 	}
 
 	protected void handleConnections() throws IOException {
 		while (!close) {
+			// should use threadpool?
 			Socket client = server.accept();
+			if (!isResouceEnough()) {
+				client.getOutputStream().write("system resource is not enough".getBytes());
+				client.getOutputStream().flush();
+				client.close();
+				continue;
+			}
 			AbstractSession session = newSessionInstance(client);
+			sessions.add(session);
+
+			SvrLogger.log("new session added," + client + "size is " + sessions.size());
 			new Thread(session).start();
 		}
 	}
 
+	protected boolean isResouceEnough() {
+		return false;
+	}
+
 	public abstract AbstractSession newSessionInstance(Socket session);
 
-	protected void handleServerException(IOException e) {
+	protected void handleException(Exception e) {
 		SvrLogger.log("handleServerException " + e.getMessage());
 		e.printStackTrace(SvrLogger.getPrintStream());
+		for (AbstractSession session : sessions) {
+			if (session.socket != null) {
+				try {
+					session.socket.getOutputStream().write(
+							("sever error happen," + e.getMessage() + " and will shutdown all sessions").getBytes());
+					session.socket.getOutputStream().flush();
+					session.socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace(SvrLogger.getPrintStream());
+				}
+
+			}
+		}
 	}
 
 	protected void release() {
 		SvrLogger.log("release the resource");
+		if (server != null) {
+			try {
+				// is it ok like this?
+				server.close();
+			} catch (IOException e) {
+			}
+		}
 	}
 
 	@Override
@@ -58,9 +100,10 @@ public abstract class AbstractCentralServer implements Runnable {
 		try {
 			startServer();
 			handleConnections();
+		} catch (Exception e) {
+			handleException(e);
+		} finally {
 			release();
-		} catch (IOException e) {
-			handleServerException(e);
 		}
 	}
 

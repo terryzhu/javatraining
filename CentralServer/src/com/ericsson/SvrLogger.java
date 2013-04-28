@@ -18,11 +18,12 @@ import java.io.PrintStream;
  */
 public class SvrLogger {
 	public static final PrintStream printStream = System.out;
+
 	public static void log(String log) {
 		printStream.println(log);
 	}
-	
-	public static PrintStream getPrintStream(){
+
+	public static PrintStream getPrintStream() {
 		return printStream;
 	}
 }

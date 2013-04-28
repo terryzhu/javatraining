@@ -170,12 +170,19 @@ public class Copy {
 			while ((read = inputStream.read()) != -1) {
 				outputStream.write(read);
 			}
+			outputStream.flush();
 		} catch (IOException e) {
 			throw e;
 		} finally {
-			outputStream.flush();
-			outputStream.close();
-			inputStream.close();
+			try {
+				outputStream.close();
+			} catch (Exception e2) {
+			}
+			try {
+				inputStream.close();
+			} catch (Exception e2) {
+			}
+
 		}
 
 	}

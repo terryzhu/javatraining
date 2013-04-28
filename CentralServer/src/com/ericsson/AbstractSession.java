@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.UUID;
 
 /**
  * @author ZJ
@@ -27,14 +28,17 @@ import java.net.Socket;
 public abstract class AbstractSession implements Runnable {
 	public static final String EXIT = "EXIT";
 	public static final String PROMPT = "> ";
-	Socket socket;
+	protected Socket socket = null;
+	protected AbstractCentralServer server = null;
+	protected UUID uuid = UUID.randomUUID();
 
-	public AbstractSession(Socket socket) {
+	public AbstractSession(AbstractCentralServer server, Socket socket) {
 		super();
 		this.socket = socket;
+		this.server = server;
 	}
 
-	protected void handleMessage() throws IOException {
+	protected void onMessage() throws IOException {
 		InputStream inputStream = null;
 		OutputStream outputStream = null;
 		BufferedReader reader = null;
@@ -48,59 +52,78 @@ public abstract class AbstractSession implements Runnable {
 			writer.flush();
 			String input;
 			while (!EXIT.equals((input = reader.readLine()))) {
-				String ouput = handleData(input);
+				String ouput = handleInput(input.trim());
 				writer.write(ouput + "\r\n" + PROMPT);
 				writer.flush();
 			}
 		} finally {
-			boolean exceptionHappened = false;
-			exceptionHappened = closeIo(inputStream, exceptionHappened);
-			exceptionHappened = closeIo(outputStream, exceptionHappened);
-			exceptionHappened = closeIo(reader, exceptionHappened);
-			exceptionHappened = closeIo(writer, exceptionHappened);
+			boolean exceptionHappened = closeIo(socket);
+			// how to close several streams?
+			// exceptionHappened = closeIo(inputStream) || closeIo(outputStream)
+			// || closeIo(reader) || closeIo(writer);
 			if (exceptionHappened) {
-				throw new IOException("IO Exception occurs when handleMessage()");
+				throw new IOException("IO Exception occurs in onMessage()");
 			}
-
 		}
 
 	}
 
-	protected void sessionEstablished() {
-		SvrLogger.log("session established");
+	protected void onEstablished() {
+		SvrLogger.log("session " + uuid + " established");
 	}
 
-	protected void sessionDestroyed() {
-		SvrLogger.log("session destroyed");
+	protected void onDestroyed() throws IOException {
+		SvrLogger.log("session " + uuid + " destroyed");
 	}
 
-	public abstract String handleData(String input);
+	protected void release() {
+		SvrLogger.log("session release");
+		if (server.getSessions().contains(this)) {
+			server.getSessions().remove(this);
+			SvrLogger.log("session " + uuid + " is removed from session list,now sessions size is "
+					+ server.getSessions().size());
+		}
+		if (socket != null) {
+			try {
+				socket.close();
+			} catch (IOException e) {
+			}
+		}
+	}
 
-	protected void handleSessionException(Exception e) {
+	public abstract String handleInput(String input);
+
+	protected void handleException(Exception e) {
 		SvrLogger.log("handle session exception " + e.getMessage());
 		e.printStackTrace(SvrLogger.getPrintStream());
+		try {
+			socket.getOutputStream().write(e.getMessage().getBytes());
+		} catch (IOException e1) {
+			e1.printStackTrace(SvrLogger.getPrintStream());
+		}
 	}
 
 	@Override
 	public void run() {
 		try {
-			sessionEstablished();
-			handleMessage();
-			sessionDestroyed();
-		} catch (IOException e) {
-			handleSessionException(e);
+			onEstablished();
+			onMessage();
+			onDestroyed();
+		} catch (Exception e) {
+			handleException(e);
+		} finally {
+			release();
 		}
-
 	}
 
-	private boolean closeIo(Closeable closeable, boolean exceptionHappened) {
+	private boolean closeIo(Closeable closeable) {
 		try {
 			if (closeable != null) {
 				closeable.close();
 			}
 		} catch (IOException e) {
-			exceptionHappened = true;
+			return true;
 		}
-		return exceptionHappened;
+		return false;
 	}
 }
