@@ -21,10 +21,6 @@ public class Session extends AbstractSession {
 	CentralServer server;
 	public static final String INVALID_INPUT = "invalid input";
 
-	/**
-	 * @param server
-	 * @param socket
-	 */
 	public Session(CentralServer server, Socket socket) {
 		super(server, socket);
 		this.server = server;
@@ -59,6 +55,9 @@ public class Session extends AbstractSession {
 	}
 
 	private String doRegister(String key) {
+		if (server.getKeys().contains(key)) {
+			return "fail to register key, key [" + key + "] has already been registered before";
+		}
 		server.getKeys().add(key);
 		return "key [" + key + "] has registered";
 	}

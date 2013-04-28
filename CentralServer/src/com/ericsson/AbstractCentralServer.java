@@ -61,7 +61,7 @@ public abstract class AbstractCentralServer implements Runnable {
 	}
 
 	protected boolean isResouceEnough() {
-		return false;
+		return true;
 	}
 
 	public abstract AbstractSession newSessionInstance(Socket session);
@@ -73,7 +73,7 @@ public abstract class AbstractCentralServer implements Runnable {
 			if (session.socket != null) {
 				try {
 					session.socket.getOutputStream().write(
-							("sever error happen," + e.getMessage() + " and will shutdown all sessions").getBytes());
+							("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n").getBytes());
 					session.socket.getOutputStream().flush();
 					session.socket.close();
 				} catch (IOException e1) {
