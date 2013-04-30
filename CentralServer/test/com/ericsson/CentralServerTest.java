@@ -11,70 +11,103 @@
 package com.ericsson;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author ZJ
  * 
+ *         Questions:
+ * 
+ *         Q1: how to write test case for some code about framework such as
+ *         socket, logging, database ect, I think it's like functional test?
+ * 
+ *         Q2: is it normal that close server will throw some exception? how to
+ *         avoid this problem? use non-block socket?
+ * 
+ *         Q3: do I need to use selector (multiplexing) to implement this
+ *         exercise?
+ * 
+ *         Q4: multi threads VS single thread?
+ * 
+ *         Q5: how to write clean code to close several streams? because
+ *         stream.close() will also throw exception
+ * 
+ *         Q6: will this code cause some unexpected networking programming
+ *         problem out of my competence such as TCP self-connection?
+ * 
+ *         Q7: do we need to stream1 = null after stream1.close() ?
+ * 
+ *         Q8: should I use thread pool?
+ * 
  */
 public class CentralServerTest {
+	public static final int PORT = 8888;
+	CentralServer server = null;
+	Socket client = null;
+
 	private void writeString(Socket socket, String output) throws Exception {
 		socket.getOutputStream().write((output + "\r\n").getBytes());
 		socket.getOutputStream().flush();
 		Thread.sleep(200);
 	}
 
-	@Test
-	public void testConnection() throws Exception {
-		// xunlei will use 8888 :-(
-		CentralServer server = new CentralServer(8888);
+	@Before
+	public void setUp() throws Exception {
+		server = new CentralServer(PORT);
 		new Thread(server).start();
 		Thread.sleep(200);
-		Socket socket = new Socket("localhost", 8888);
-
-		// normal input
-		writeString(socket, "hello");
-		assertEquals(1, server.getSessions().size());
-		assertEquals(0, server.getKeys().size());
-		
-		// ugly close
-		socket.close();
+		client = new Socket("localhost", PORT);
 		Thread.sleep(200);
-		assertEquals(0, server.getSessions().size());
+	}
 
-		// smooth close
-		Socket socket2 = new Socket("localhost", 8888);
-		writeString(socket2, "EXIT");
-		assertEquals(0, server.getSessions().size());
+	@After
+	public void tearDown() throws Exception {
 		Thread.sleep(200);
-
-		// server is close unexpected
-		Socket socket3 = new Socket("localhost", 8888);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(socket3.getInputStream()));
-		server.server.close();
-		assertEquals("sever error happen,Socket is closed and will shutdown all sessions", reader.readLine());
-		socket3.close();
+		server.close();
 		Thread.sleep(200);
 	}
 
 	@Test
-	public void testBusinessLogic() throws Exception {
-		CentralServer server = new CentralServer(8888);
-		Session session = new Session(server, null);
-		assertEquals(Session.INVALID_INPUT, session.handleInput("invalidinput"));
-		assertEquals("key [111] has not been registered", session.handleInput("unregister:111"));
+	public void testNormalConnection() throws Exception {
+		writeString(client, "hello");
+		assertEquals(1, server.getSessions().size());
+		assertEquals(0, server.getKeys().size());
 
-		assertEquals("key [111] has registered", session.handleInput("register:111"));
-		assertEquals("fail to register key, key [111] has already been registered before",
-				session.handleInput("register:111"));
-		assertTrue(session.handleInput("dothings:111").startsWith("dothings"));
+		// smooth close
+		writeString(client, "EXIT");
+		assertEquals(0, server.getSessions().size());
+		Thread.sleep(200);
+	}
 
-		assertEquals("key [111] has unregistered", session.handleInput("unregister:111"));
+	@Test
+	public void testClientCloseUnexcepted() throws Exception {
+		client.close();
+		Thread.sleep(200);
+		assertEquals(0, server.getSessions().size());
+	}
+
+	@Test
+	public void testServerCloseUnexcepted() throws Exception {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+		server.server.close();
+		assertEquals("> sever error happen,socket closed and will shutdown all sessions", reader.readLine());
+		client.close();
+	}
+
+	@Test
+	public void testServerResouceNotEnough() throws Exception {
+		server.isResourceEnough = false;
+		Socket client2 = new Socket("localhost", PORT);
+		Thread.sleep(200);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(client2.getInputStream()));
+		assertEquals("system resource is not enough", reader.readLine());
+		client2.close();
 	}
 }

@@ -30,6 +30,7 @@ public abstract class AbstractCentralServer implements Runnable {
 	protected ServerSocket server;
 	protected int port;
 	protected boolean close = false;
+	protected boolean isResourceEnough = true;
 	protected Set<AbstractSession> sessions = Collections.synchronizedSet(new HashSet<AbstractSession>());
 
 	public Set<AbstractSession> getSessions() {
@@ -37,14 +38,12 @@ public abstract class AbstractCentralServer implements Runnable {
 	}
 
 	protected void startServer() throws IOException {
-		// java contains tcp self-connection
 		server = new ServerSocket(port);
 		SvrLogger.log(server.toString() + " is listening");
 	}
 
 	protected void handleConnections() throws IOException {
 		while (!close) {
-			// should use threadpool?
 			Socket client = server.accept();
 			if (!isResouceEnough()) {
 				client.getOutputStream().write("system resource is not enough".getBytes());
@@ -61,7 +60,7 @@ public abstract class AbstractCentralServer implements Runnable {
 	}
 
 	protected boolean isResouceEnough() {
-		return true;
+		return isResourceEnough;
 	}
 
 	public abstract AbstractSession newSessionInstance(Socket session);
@@ -72,8 +71,9 @@ public abstract class AbstractCentralServer implements Runnable {
 		for (AbstractSession session : sessions) {
 			if (session.socket != null) {
 				try {
-					session.socket.getOutputStream().write(
-							("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n").getBytes());
+					session.socket.getOutputStream()
+							.write(("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n")
+									.getBytes());
 					session.socket.getOutputStream().flush();
 					session.socket.close();
 				} catch (IOException e1) {
@@ -92,6 +92,12 @@ public abstract class AbstractCentralServer implements Runnable {
 				server.close();
 			} catch (IOException e) {
 			}
+		}
+	}
+
+	protected void close() throws IOException {
+		if (server != null) {
+			server.close();
 		}
 	}
 
