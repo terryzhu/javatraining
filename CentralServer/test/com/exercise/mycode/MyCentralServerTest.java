@@ -26,7 +26,13 @@ import com.exercise.framework.CentralServer;
 /**
  * @author ZJ
  * 
- *         Questions:
+ *         Retrospective from last exercise:
+ * 
+ *         I've read the source code of gnu cp tool and found that the copy
+ *         buffer is a file system block
+ * 
+ * 
+ *         Questions for this exercise:
  * 
  *         Q1: how to write test case for some code about framework such as
  *         socket, logging, database ect, I think it's like functional test?
