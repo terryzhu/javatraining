@@ -8,17 +8,20 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.ericsson;
+package com.exercise.mycode;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.Socket;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.exercise.framework.CentralServer;
 
 /**
  * @author ZJ
@@ -46,10 +49,15 @@ import org.junit.Test;
  * 
  *         Q8: should I use thread pool?
  * 
+ *         Q9: when I do this and last exercises, I always refactor when I have
+ *         done the functionality, and then found some improvements, and then
+ *         refactor again, which cost me several days, but in real working
+ *         environment, it's impossible, how to avoid it?
+ * 
  */
-public class CentralServerTest {
+public class MyCentralServerTest {
 	public static final int PORT = 8888;
-	CentralServer server = null;
+	MyCentralServer server = null;
 	Socket client = null;
 
 	private void writeString(Socket socket, String output) throws Exception {
@@ -60,7 +68,7 @@ public class CentralServerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		server = new CentralServer(PORT);
+		server = new MyCentralServer(PORT);
 		new Thread(server).start();
 		Thread.sleep(200);
 		client = new Socket("localhost", PORT);
@@ -96,14 +104,16 @@ public class CentralServerTest {
 	@Test
 	public void testServerCloseUnexcepted() throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-		server.server.close();
+		server.close();
 		assertEquals("> sever error happen,socket closed and will shutdown all sessions", reader.readLine());
 		client.close();
 	}
 
 	@Test
 	public void testServerResouceNotEnough() throws Exception {
-		server.isResourceEnough = false;
+		Field field = CentralServer.class.getDeclaredField("isResourceEnough");
+		field.setAccessible(true);
+		field.set(server, false);
 		Socket client2 = new Socket("localhost", PORT);
 		Thread.sleep(200);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(client2.getInputStream()));

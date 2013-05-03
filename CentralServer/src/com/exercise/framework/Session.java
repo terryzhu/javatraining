@@ -8,7 +8,7 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.ericsson;
+package com.exercise.framework;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,24 +21,27 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.UUID;
 
+
+
 /**
  * @author ZJ
  * 
  */
-public abstract class AbstractSession implements Runnable {
+public abstract class Session extends AbstractSession {
 	public static final String EXIT = "EXIT";
 	public static final String PROMPT = "> ";
 	protected Socket socket = null;
-	protected AbstractCentralServer server = null;
+	protected CentralServer server = null;
 	protected UUID uuid = UUID.randomUUID();
 
-	public AbstractSession(AbstractCentralServer server, Socket socket) {
+	public Session(CentralServer server, Socket socket) {
 		super();
 		this.socket = socket;
 		this.server = server;
 	}
 
-	protected void onMessage() throws IOException {
+	@Override
+	protected void handleMessage() throws IOException {
 		InputStream inputStream = null;
 		OutputStream outputStream = null;
 		BufferedReader reader = null;
@@ -68,14 +71,17 @@ public abstract class AbstractSession implements Runnable {
 
 	}
 
+	@Override
 	protected void onEstablished() {
 		SvrLogger.log("session " + uuid + " established");
 	}
 
-	protected void onDestroyed() throws IOException {
+	@Override
+	protected void onDestroyed() {
 		SvrLogger.log("session " + uuid + " destroyed");
 	}
 
+	@Override
 	protected void release() {
 		SvrLogger.log("session release");
 		if (server.getSessions().contains(this)) {
@@ -93,6 +99,7 @@ public abstract class AbstractSession implements Runnable {
 
 	public abstract String handleInput(String input);
 
+	@Override
 	protected void handleException(Exception e) {
 		SvrLogger.log("handle session exception " + e.getMessage());
 		e.printStackTrace(SvrLogger.getPrintStream());
@@ -100,19 +107,6 @@ public abstract class AbstractSession implements Runnable {
 			socket.getOutputStream().write(e.getMessage().getBytes());
 		} catch (IOException e1) {
 			e1.printStackTrace(SvrLogger.getPrintStream());
-		}
-	}
-
-	@Override
-	public void run() {
-		try {
-			onEstablished();
-			onMessage();
-			onDestroyed();
-		} catch (Exception e) {
-			handleException(e);
-		} finally {
-			release();
 		}
 	}
 

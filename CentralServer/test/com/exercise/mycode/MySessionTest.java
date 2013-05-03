@@ -8,23 +8,26 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.ericsson;
+package com.exercise.mycode;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.exercise.mycode.MyCentralServer;
+import com.exercise.mycode.MySession;
+
 /**
  * @author ZJ
  * 
  */
-public class SessionTest {
+public class MySessionTest {
 
 	@Test
 	public void testHandleInput() {
-		CentralServer server = new CentralServer(8888);
-		Session session = new Session(server, null);
-		assertEquals(Session.INVALID_INPUT, session.handleInput("invalidinput"));
+		MyCentralServer server = new MyCentralServer(8888);
+		MySession session = new MySession(server, null);
+		assertEquals(MySession.INVALID_INPUT, session.handleInput("invalidinput"));
 		assertEquals("key [111] has not been registered", session.handleInput("unregister:111"));
 
 		assertEquals("key [111] has registered", session.handleInput("register:111"));

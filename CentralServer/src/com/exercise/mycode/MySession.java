@@ -8,20 +8,23 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.ericsson;
+package com.exercise.mycode;
 
 import java.net.Socket;
 import java.util.Date;
+
+import com.exercise.framework.Session;
+
 
 /**
  * @author ZJ
  * 
  */
-public class Session extends AbstractSession {
-	CentralServer server;
+public class MySession extends Session {
+	MyCentralServer server;
 	public static final String INVALID_INPUT = "invalid input";
 
-	public Session(CentralServer server, Socket socket) {
+	public MySession(MyCentralServer server, Socket socket) {
 		super(server, socket);
 		this.server = server;
 	}

@@ -8,12 +8,16 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.ericsson;
+package com.exercise.mycode;
 
 import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.exercise.framework.CentralServer;
+import com.exercise.framework.Session;
+
 
 /**
  * @author ZJ
@@ -28,19 +32,19 @@ import java.util.Set;
  *         3. if the key has been registered, the latter register operation
  *         should return failure.
  */
-public class CentralServer extends AbstractCentralServer {
+public class MyCentralServer extends CentralServer {
 	Set<String> keys = Collections.synchronizedSet(new HashSet<String>());
 
 	public Set<String> getKeys() {
 		return keys;
 	}
 
-	public CentralServer(int port) {
+	public MyCentralServer(int port) {
 		super(port);
 	}
 
 	@Override
-	public AbstractSession newSessionInstance(Socket socket) {
-		return new Session(this, socket);
+	public Session newSessionInstance(Socket socket) {
+		return new MySession(this, socket);
 	}
 }
