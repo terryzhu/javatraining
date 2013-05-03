@@ -28,8 +28,11 @@ import com.exercise.framework.CentralServer;
  * 
  *         Retrospective from last exercise:
  * 
- *         I've read the source code of gnu cp tool and found that the copy
+ *         1. I've read the source code of gnu cp tool and found that the copy
  *         buffer is a file system block
+ * 
+ *         2. the cp code in the book you mentioned last time is not like the
+ *         exercise
  * 
  * 
  *         Questions for this exercise:
