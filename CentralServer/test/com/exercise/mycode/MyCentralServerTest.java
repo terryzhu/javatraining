@@ -21,7 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.exercise.framework.CentralServer;
+import com.exercise.framework.server.CentralServer;
 
 /**
  * @author ZJ

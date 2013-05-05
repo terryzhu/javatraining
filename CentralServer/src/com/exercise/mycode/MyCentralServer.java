@@ -15,8 +15,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.exercise.framework.CentralServer;
-import com.exercise.framework.Session;
+import com.exercise.framework.server.CentralServer;
+import com.exercise.framework.session.Session;
 
 
 /**

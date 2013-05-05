@@ -8,7 +8,7 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.exercise.framework;
+package com.exercise.framework.session;
 
 import java.io.IOException;
 
@@ -26,7 +26,8 @@ public abstract class AbstractSession implements Runnable {
 	protected abstract void handleException(Exception e);
 
 	protected abstract void release();
-
+	
+	
 	@Override
 	public void run() {
 		try {

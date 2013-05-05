@@ -8,7 +8,7 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.exercise.framework;
+package com.exercise.framework.server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,7 +17,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-
+import com.exercise.framework.session.Session;
+import com.exercise.framework.util.SvrLogger;
 
 /**
  * @author eprtuxy
@@ -74,18 +75,7 @@ public abstract class CentralServer extends AbstractCentralServer {
 		SvrLogger.log("handleServerException " + e.getMessage());
 		e.printStackTrace(SvrLogger.getPrintStream());
 		for (Session session : sessions) {
-			if (session.socket != null) {
-				try {
-					session.socket.getOutputStream()
-							.write(("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n")
-									.getBytes());
-					session.socket.getOutputStream().flush();
-					session.socket.close();
-				} catch (IOException e1) {
-					e1.printStackTrace(SvrLogger.getPrintStream());
-				}
-
-			}
+			session.onServerException(e);
 		}
 	}
 

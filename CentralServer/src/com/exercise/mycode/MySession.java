@@ -13,7 +13,7 @@ package com.exercise.mycode;
 import java.net.Socket;
 import java.util.Date;
 
-import com.exercise.framework.Session;
+import com.exercise.framework.session.Session;
 
 
 /**

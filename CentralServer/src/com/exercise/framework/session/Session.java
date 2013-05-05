@@ -8,7 +8,7 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.exercise.framework;
+package com.exercise.framework.session;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,7 +21,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.UUID;
 
-
+import com.exercise.framework.server.CentralServer;
+import com.exercise.framework.util.SvrLogger;
 
 /**
  * @author ZJ
@@ -120,4 +121,20 @@ public abstract class Session extends AbstractSession {
 		}
 		return false;
 	}
+
+	public void onServerException(Exception e) {
+		try {
+			if (socket!=null && !socket.isClosed()) {
+				socket.getOutputStream().write(
+						("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n").getBytes());
+				socket.getOutputStream().flush();
+				socket.close();
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace(SvrLogger.getPrintStream());
+		}
+		
+		
+	}
+
 }
