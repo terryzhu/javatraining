@@ -7,3 +7,8 @@
 
 # Setting files #
 .settings/
+
+
+
+# C++ ignore files
+CppServer_out
