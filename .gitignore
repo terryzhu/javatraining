@@ -12,3 +12,6 @@
 
 # C++ ignore files
 CppServer_out
+*.o
+tags
+udtags
