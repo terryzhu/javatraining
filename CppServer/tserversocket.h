@@ -12,6 +12,8 @@ public:
 	int close();
 private:
 	int sd;
+	tserversocket(const  tserversocket &);
+ 	tserversocket & operator = (const  tserversocket & );
 };
 
 

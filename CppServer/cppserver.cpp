@@ -10,5 +10,7 @@ int main(){
 		cout<<"new connection "<<pt->sd<<endl;
 		sleep(3);
 	}
+	//tserversocket s2(server);
+
 	return 0;
 }
