@@ -1,7 +1,7 @@
 #ifndef TUTIL
 #define TUTIL
 #include "stdio.h"
-void print_err_code();
+int print_err_code();
 
 
 

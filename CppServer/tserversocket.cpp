@@ -39,3 +39,10 @@ int tserversocket::accept(){
 	}
 	return ret;
 }
+
+int tserversocket::close(){
+	int ret = ::close(sd);
+	// is it OK? like script?
+	ret == -1 && print_err_code();
+	return ret;
+}

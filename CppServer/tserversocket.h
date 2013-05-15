@@ -9,6 +9,7 @@ public:
 	int bind(int _port);
 	int listen();
 	int accept();
+	int close();
 private:
 	int sd;
 };
