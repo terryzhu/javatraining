@@ -32,12 +32,13 @@ int tserversocket::bind(int _port){
 	return ret;
 }
 
-int tserversocket::accept(){
+auto_ptr<tsession> tserversocket::accept(){
 	int ret = ::accept(sd,NULL,NULL);
 	if (ret == -1 ){
 		print_err_code();
 	}
-	return ret;
+	auto_ptr<tsession> pt(new tsession(ret));
+	return pt;
 }
 
 int tserversocket::close(){

@@ -6,8 +6,9 @@ int main(){
 	server.bind(8888);
 	server.listen();
 	while(1){
-		int cd = server.accept();
-		cout<<"new connection "<<cd<<endl;
+		auto_ptr<tsession> pt = server.accept();
+		cout<<"new connection "<<pt->sd<<endl;
+		sleep(3);
 	}
 	return 0;
 }

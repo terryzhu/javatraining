@@ -13,6 +13,8 @@
 #include "sys/socket.h"
 #include <sys/types.h>
 #include "vector"
+#include "memory"
+using namespace std;
 
 
 
