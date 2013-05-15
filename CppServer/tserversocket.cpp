@@ -4,6 +4,10 @@ tserversocket::tserversocket(){
 	if (sd == -1 ){
 		print_err_code();
 	}
+	int sock_opt = 1;
+	if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (void*)&sock_opt, sizeof(sock_opt) ) == -1){
+		print_err_code();
+	}
 }
 
 int tserversocket::listen(){
@@ -18,15 +22,20 @@ int tserversocket::bind(int _port){
 	struct sockaddr_in sin = { 0 };
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
-	sin.sin_port = _port;
+	sin.sin_port = htons(_port);
+
 	int ret = ::bind(sd, (struct sockaddr *)&sin,sizeof(struct sockaddr_in));
 	if (ret == -1 ){
 		print_err_code();
 	}
 
-	return -1;
+	return ret;
 }
 
 int tserversocket::accept(){
-	return -1;
+	int ret = ::accept(sd,NULL,NULL);
+	if (ret == -1 ){
+		print_err_code();
+	}
+	return ret;
 }
