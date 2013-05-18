@@ -20,6 +20,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.exercise.session.Session;
+import com.exercise.session.SessionFactory;
+
 /**
  * @author ZJ
  * 
@@ -60,6 +63,38 @@ import org.junit.Test;
  *         refactor again, which cost me several days, but in real working
  *         environment, it's impossible, how to avoid it?
  * 
+ *         ================= second iteration of workshop
+ * 
+ *         Updated:
+ * 
+ *         - put keys into Service Data to remove the recursive dependence of
+ *         session and server [ServerData.java]
+ * 
+ *         - remove some abstract class which only contains some skeleton
+ *         abstract method [remove AbstractXXX.java]
+ * 
+ *         - add SessionManager class to manage all connected sessions such as
+ *         session connection callback method,use observer pattern, when new
+ *         connection comes, dispatch it to sessionmanager [SessionManager.java]
+ * 
+ *         - use JDK concurrency ThreadPoolExecutor to manage the multi
+ *         threads[SessionManager.java]
+ * 
+ *         there is a question, how to get runnable entities from the
+ *         ThreadPoolExecutor?
+ * 
+ *         - I want the handleInput() [Session.java] to be flexible because it's
+ *         for business logic, so I use MySession class [MySession.java], but
+ *         CentralServer didn't know how to new a corresponding Session, such
+ *         as: Socket socket = server.accept();
+ *         <p>
+ *         Session session = new XXXSession(socket);// which class should I use?
+ *         <p>
+ *         I choose to use simple factory
+ *         <p>
+ *         Session session = SessionFactory.createSession(socket);
+ *         <p>
+ *         
  */
 public class CentralServerTest {
 	public static final int PORT = 8888;
