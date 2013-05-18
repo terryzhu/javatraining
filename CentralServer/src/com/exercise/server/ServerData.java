@@ -1,5 +1,5 @@
 /* 
- * Created : 2013-4-27 
+ * Created : 2013-5-18 
  * 
  * Copyright (c) 2012 Ericsson AB, Sweden. 
  * All rights reserved. 
@@ -8,22 +8,25 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.exercise.framework.util;
+package com.exercise.server;
 
-import java.io.PrintStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author ZJ
  * 
  */
-public class SvrLogger {
-	public static final PrintStream printStream = System.out;
+public class ServerData {
+ 	Set<String> keys = Collections.synchronizedSet(new HashSet<String>());
 
-	public static void log(String log) {
-		printStream.println(log);
+	public Set<String> getKeys() {
+		return keys;
 	}
 
-	public static PrintStream getPrintStream() {
-		return printStream;
+	public void setKeys(Set<String> keys) {
+		this.keys = keys;
 	}
+ 	
 }

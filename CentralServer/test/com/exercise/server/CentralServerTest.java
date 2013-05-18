@@ -8,20 +8,17 @@
  * or in accordance with the terms and conditions stipulated in the agreement/contract 
  * under which the program(s) have been supplied. 
  */
-package com.exercise.mycode;
+package com.exercise.server;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.net.Socket;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.exercise.framework.server.CentralServer;
 
 /**
  * @author ZJ
@@ -64,9 +61,9 @@ import com.exercise.framework.server.CentralServer;
  *         environment, it's impossible, how to avoid it?
  * 
  */
-public class MyCentralServerTest {
+public class CentralServerTest {
 	public static final int PORT = 8888;
-	MyCentralServer server = null;
+	CentralServer server = null;
 	Socket client = null;
 
 	private void writeString(Socket socket, String output) throws Exception {
@@ -77,7 +74,7 @@ public class MyCentralServerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		server = new MyCentralServer(PORT);
+		server = new CentralServer(PORT);
 		new Thread(server).start();
 		Thread.sleep(200);
 		client = new Socket("localhost", PORT);
@@ -94,12 +91,12 @@ public class MyCentralServerTest {
 	@Test
 	public void testNormalConnection() throws Exception {
 		writeString(client, "hello");
-		assertEquals(1, server.getSessions().size());
-		assertEquals(0, server.getKeys().size());
+		assertEquals(1, server.manager.pool.getActiveCount());
+		assertEquals(0, server.data.getKeys().size());
 
 		// smooth close
 		writeString(client, "EXIT");
-		assertEquals(0, server.getSessions().size());
+		assertEquals(0, server.manager.pool.getActiveCount());
 		Thread.sleep(200);
 	}
 
@@ -107,26 +104,16 @@ public class MyCentralServerTest {
 	public void testClientCloseUnexcepted() throws Exception {
 		client.close();
 		Thread.sleep(200);
-		assertEquals(0, server.getSessions().size());
+		assertEquals(0, server.manager.pool.getActiveCount());
 	}
 
 	@Test
 	public void testServerCloseUnexcepted() throws Exception {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		server.close();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		assertEquals("> sever error happen,socket closed and will shutdown all sessions", reader.readLine());
-		client.close();
+		Thread.sleep(200);
+		assertEquals(0, server.manager.pool.getActiveCount());
 	}
 
-	@Test
-	public void testServerResouceNotEnough() throws Exception {
-		Field field = CentralServer.class.getDeclaredField("isResourceEnough");
-		field.setAccessible(true);
-		field.set(server, false);
-		Socket client2 = new Socket("localhost", PORT);
-		Thread.sleep(200);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(client2.getInputStream()));
-		assertEquals("system resource is not enough", reader.readLine());
-		client2.close();
-	}
 }

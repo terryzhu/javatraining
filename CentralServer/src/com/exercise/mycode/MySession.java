@@ -13,20 +13,18 @@ package com.exercise.mycode;
 import java.net.Socket;
 import java.util.Date;
 
-import com.exercise.framework.session.Session;
-
+import com.exercise.server.ServerData;
+import com.exercise.session.Session;
 
 /**
  * @author ZJ
  * 
  */
 public class MySession extends Session {
-	MyCentralServer server;
 	public static final String INVALID_INPUT = "invalid input";
 
-	public MySession(MyCentralServer server, Socket socket) {
-		super(server, socket);
-		this.server = server;
+	public MySession(Socket socket, ServerData data) {
+		super(socket, data);
 	}
 
 	@Override
@@ -53,15 +51,15 @@ public class MySession extends Session {
 	}
 
 	private String doUnregister(String key) {
-		server.getKeys().remove(key);
+		data.getKeys().remove(key);
 		return "key [" + key + "] has unregistered";
 	}
 
 	private String doRegister(String key) {
-		if (server.getKeys().contains(key)) {
+		if (data.getKeys().contains(key)) {
 			return "fail to register key, key [" + key + "] has already been registered before";
 		}
-		server.getKeys().add(key);
+		data.getKeys().add(key);
 		return "key [" + key + "] has registered";
 	}
 
@@ -78,7 +76,7 @@ public class MySession extends Session {
 	}
 
 	boolean isKeyRegistered(String key) {
-		return server.getKeys().contains(key);
+		return data.getKeys().contains(key);
 	}
 
 	boolean isRegisterCommand(String command) {

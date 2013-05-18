@@ -10,12 +10,13 @@
  */
 package com.exercise.mycode;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.exercise.mycode.MyCentralServer;
 import com.exercise.mycode.MySession;
+import com.exercise.server.ServerData;
 
 /**
  * @author ZJ
@@ -25,8 +26,7 @@ public class MySessionTest {
 
 	@Test
 	public void testHandleInput() {
-		MyCentralServer server = new MyCentralServer(8888);
-		MySession session = new MySession(server, null);
+		MySession session = new MySession(null, new ServerData());
 		assertEquals(MySession.INVALID_INPUT, session.handleInput("invalidinput"));
 		assertEquals("key [111] has not been registered", session.handleInput("unregister:111"));
 
