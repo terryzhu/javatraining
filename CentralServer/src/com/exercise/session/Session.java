@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Observable;
 
 import com.exercise.server.ServerData;
@@ -66,6 +67,9 @@ public abstract class Session extends Observable implements Runnable {
 				writer.write(ouput + "\r\n" + PROMPT);
 				writer.flush();
 			}
+		} catch (SocketTimeoutException e) {
+			e.printStackTrace(SvrLogger.getPrintStream());
+			throw e;
 		} finally {
 			socket.close();
 		}
@@ -91,15 +95,23 @@ public abstract class Session extends Observable implements Runnable {
 	public abstract String handleInput(String input);
 
 	public void onServerException(Exception e) {
-		try {
-			if (socket != null && !socket.isClosed()) {
-				socket.getOutputStream().write(
-						("sever error happen," + e.getMessage() + " and will shutdown all sessions\r\n").getBytes());
+		writeStringAndCloseSocket(socket, "sever error happen," + e.getMessage()
+				+ " and will shutdown all sessions\r\n");
+	}
+
+	public void onExceedSessionLimit() {
+		writeStringAndCloseSocket(socket, "Exceed max session limit\r\n");
+	}
+
+	private void writeStringAndCloseSocket(Socket socket, String string) {
+		if (socket != null && !socket.isClosed()) {
+			try {
+				socket.getOutputStream().write(string.getBytes());
 				socket.getOutputStream().flush();
 				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace(SvrLogger.getPrintStream());
 			}
-		} catch (Exception e1) {
-			e1.printStackTrace(SvrLogger.getPrintStream());
 		}
 	}
 

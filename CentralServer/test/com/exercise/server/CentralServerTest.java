@@ -20,9 +20,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.exercise.session.Session;
-import com.exercise.session.SessionFactory;
-
 /**
  * @author ZJ
  * 
@@ -94,7 +91,24 @@ import com.exercise.session.SessionFactory;
  *         <p>
  *         Session session = SessionFactory.createSession(socket);
  *         <p>
- *         
+ * 
+ *         - limit the max sessions. return an error message if connections
+ *         exceeds a value.
+ * 
+ *         -- [SessionManager.java] add RejectedExecutionHandler in
+ *         ThreadPoolExecutor, and call session.onExceedSessionLimit();
+ * 
+ *         -- or I could write like if (pool.getActiveCount() > NUM ){ xxx } but
+ *         I think it's not professional
+ * 
+ *         - add timeout to each session. close the session if a session did not
+ *         received input for a specific time.
+ * 
+ *         -- just settimeout in CentralServer.java Line 59, when socket
+ *         timeout, Session.java Line 70 will catch SocketTimeoutException, and
+ *         throw it out, then call Session.java Line 50, handleException and
+ *         finally release ( close session )
+ * 
  */
 public class CentralServerTest {
 	public static final int PORT = 8888;
@@ -151,4 +165,20 @@ public class CentralServerTest {
 		assertEquals(0, server.manager.pool.getActiveCount());
 	}
 
+	@Test
+	public void testExceedMaxSessionLimit() throws Exception {
+		Socket[] sockets = new Socket[5];
+		for (int i = 0; i < 5; i++) {
+			sockets[i] = new Socket("127.0.0.1", 8888);
+		}
+		Thread.sleep(200);
+		Socket socketExceedMaxSessionLimit = new Socket("127.0.0.1", 8888);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(socketExceedMaxSessionLimit.getInputStream()));
+		assertEquals("Exceed max session limit", reader.readLine());
+
+		for (int i = 0; i < 5; i++) {
+			sockets[i].close();
+		}
+		socketExceedMaxSessionLimit.close();
+	}
 }

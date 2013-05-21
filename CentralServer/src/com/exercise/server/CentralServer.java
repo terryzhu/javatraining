@@ -23,6 +23,7 @@ import com.exercise.util.SvrLogger;
  * 
  */
 public class CentralServer implements Runnable {
+	public static final int SO_TIMEOUT = 10*1000;
 	protected ServerSocket server;
 	protected int port;
 	protected boolean close = false;
@@ -55,6 +56,7 @@ public class CentralServer implements Runnable {
 	protected void handleConnections() throws IOException {
 		while (!close) {
 			Socket socket = server.accept();
+			socket.setSoTimeout(SO_TIMEOUT);
 			Session session = SessionFactory.createSession(SessionFactory.MYSESSION, socket, data);
 			if (session != null) {
 				manager.executeSession(session);
