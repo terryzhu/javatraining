@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import com.ericsson.config.ServerConfig;
 import com.exercise.session.Session;
 import com.exercise.session.SessionFactory;
 import com.exercise.util.SvrLogger;
@@ -23,11 +24,11 @@ import com.exercise.util.SvrLogger;
  * 
  */
 public class CentralServer implements Runnable {
-	public static final int SO_TIMEOUT = 10*1000;
+	// public static final int SO_TIMEOUT = 10*1000;
 	protected ServerSocket server;
 	protected int port;
 	protected boolean close = false;
-	
+
 	ServerData data = new ServerData();
 	SessionManager manager = new SessionManager();
 
@@ -49,14 +50,14 @@ public class CentralServer implements Runnable {
 	}
 
 	protected void startServer() throws IOException {
-		server = new ServerSocket(port);
+		server = new ServerSocket(ServerConfig.getInstance().getPort());
 		SvrLogger.log(server.toString() + " is listening");
 	}
 
 	protected void handleConnections() throws IOException {
 		while (!close) {
 			Socket socket = server.accept();
-			socket.setSoTimeout(SO_TIMEOUT);
+			socket.setSoTimeout(ServerConfig.getInstance().getTimeout());
 			Session session = SessionFactory.createSession(SessionFactory.MYSESSION, socket, data);
 			if (session != null) {
 				manager.executeSession(session);

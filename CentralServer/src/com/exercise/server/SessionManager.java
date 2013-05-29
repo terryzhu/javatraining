@@ -19,6 +19,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.ericsson.config.ServerConfig;
 import com.exercise.session.Session;
 import com.exercise.session.Session.SESSION_STATUS;
 import com.exercise.util.SvrLogger;
@@ -33,9 +34,9 @@ public class SessionManager implements Observer {
 	// 3. if queue is full, create new thread, if thread is > maximumPoolSize,
 	// next will be rejected
 	// so the max limit is 5+ 1 = 6 (maximumPoolSize + queue size)
-	public static final int MAX_SESSION_LIMIT = 6;
-	ThreadPoolExecutor pool = new ThreadPoolExecutor(1, MAX_SESSION_LIMIT - 1, 10, TimeUnit.MINUTES,
-			new LinkedBlockingQueue<Runnable>(1), new RejectedExecutionHandler() {
+	// public static final int MAX_SESSION_LIMIT = 6;
+	ThreadPoolExecutor pool = new ThreadPoolExecutor(1, ServerConfig.getInstance().getMax_session() - 1, 10,
+			TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(1), new RejectedExecutionHandler() {
 				@Override
 				public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
 					if (r instanceof Session) {
